@@ -25,10 +25,10 @@ export const routes: RouteObject[] = [
                 loader: dashboardLoader,
                 element: <Dashboard />
             },
-            // {
-            //     path: "lazy",
-            //     lazy: () => import("./lazy")
-            // },
+            {
+                path: "lazy",
+                lazy: () => import("./lazy")
+            },
             {
                 path: "redirect",
                 loader: redirectLoader
