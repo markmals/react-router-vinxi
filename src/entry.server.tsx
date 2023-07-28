@@ -9,16 +9,28 @@ import {
 } from "react-router-dom/server";
 import { AssetsContext, routes } from "./app";
 import { NodeIncomingMessage } from "h3";
+import { hasHandler, handleFetch$, addDeserializer } from "@tanstack/bling/server";
+
+addDeserializer({
+    apply: req => req === "$request",
+    deserialize: (value, ctx) => ctx.request
+});
 
 export default eventHandler(async event => {
     const clientManifest = import.meta.env.MANIFEST["client"];
-    // console.log(clientManifest);
     const assets = await clientManifest.inputs[clientManifest.handler].assets();
     const events = {};
 
+    let request = await createFetchRequest(event.node.req);
+
+    if (hasHandler(new URL(request.url).pathname)) {
+        return await handleFetch$({
+            request
+        });
+    }
+
     let { query, dataRoutes } = createStaticHandler(routes);
-    let remixRequest = await createFetchRequest(event.node.req);
-    let context = await query(remixRequest);
+    let context = await query(request);
 
     if (context instanceof Response) {
         throw context;

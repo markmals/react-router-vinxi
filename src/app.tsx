@@ -2,6 +2,9 @@ import React, { createContext, useContext } from "react";
 import type { RouteObject } from "react-router-dom";
 import { Outlet, Link, useLoaderData, redirect } from "react-router-dom";
 import "./index.css";
+import { server$ } from "@tanstack/bling";
+import { prisma } from "./db.secret$";
+import { Todo } from "@prisma/client";
 
 export const routes: RouteObject[] = [
     {
@@ -116,15 +119,39 @@ const rand = () => Math.round(Math.random() * 100);
 
 async function homeLoader() {
     await sleep();
-    return { data: `Home loader - random value ${rand()}` };
+
+    // FIXME: During client-side navigations, this returns an empty object
+    let server = server$(async () => {
+        let count = await prisma.todo.count();
+        // console.log(count);
+        if (count === 0) {
+            await prisma.todo.create({
+                data: {
+                    complete: false,
+                    title: "Todo!"
+                }
+            });
+        }
+
+        let data = await prisma.todo.findMany();
+        console.log("server data: ", data);
+        return data;
+    });
+
+    let serverData = await server();
+    console.log("client data from server: ", serverData);
+
+    return { data: `Home loader - random value ${rand()}`, serverData };
 }
 
 function Home() {
-    let data = useLoaderData() as { data: string };
+    let data = useLoaderData() as { data: string; serverData: Todo[] };
+    console.log("component data: ", data.serverData);
     return (
         <div>
             <h2>Home</h2>
             <p>Loader Data: {data.data}</p>
+            <p>Server Data: {JSON.stringify(data.serverData, null, 4)}</p>
         </div>
     );
 }

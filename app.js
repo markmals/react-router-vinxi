@@ -1,5 +1,6 @@
 import reactRefresh from "@vitejs/plugin-react";
 import { createApp } from "vinxi";
+import { bling } from "@tanstack/bling/vite";
 
 export default createApp({
     routers: [
@@ -16,7 +17,7 @@ export default createApp({
             build: {
                 target: "browser",
                 // @ts-ignore
-                plugins: () => [reactRefresh()]
+                plugins: () => [reactRefresh(), bling()]
             },
             base: "/_build"
         },
@@ -25,7 +26,9 @@ export default createApp({
             mode: "handler",
             handler: "./src/entry.server.tsx",
             build: {
-                target: "node"
+                target: "node",
+                // @ts-ignore
+                plugins: () => [reactRefresh(), bling()]
             }
         }
     ]

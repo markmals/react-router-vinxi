@@ -6,6 +6,12 @@ import * as ReactDOM from "react-dom/client";
 import { createBrowserRouter, matchRoutes, RouterProvider } from "react-router-dom";
 import "vinxi/runtime/client";
 import "./index.css";
+import { addSerializer } from "@tanstack/bling/client";
+
+addSerializer({
+    apply: req => req instanceof Request,
+    serialize: value => "$request"
+});
 
 hydrate();
 
